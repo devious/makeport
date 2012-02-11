@@ -2,19 +2,14 @@
 
 use strict;
 use warnings;
+use Data::Dumper;
 
-my $port = {
-	url: "",
-	comment: "",
-	version: "",
-	categories: [],
-	pkgopts: [],
-	lib_depends: [],
-	config_style: ""
-};
+my $url = shift;
 
-sub get_input {
-}
+die "Usage: makeport <url>" unless $url;
+
+my $a = process_url( $url );
+die Dumper $a;
 
 # get url;
 # get comment;
@@ -32,3 +27,31 @@ sub get_input {
 #	cmds:
 #		patch ( cp file file.orig - open file in $EDITOR )
 #		exit ( quit ) 
+
+sub get_input {
+}
+
+sub process_url {
+	my $s = shift;
+
+
+	my @parts = split( '/', $s );
+	my $r = {};
+
+	for my $p ( @parts ) {
+		if( $p =~ m/((\d+\.){1,}\d+)/ ) {
+			$r->{version} = $1;
+		}
+	}
+
+	# we need to prompt for version here ( assuming we don't have a
+	# version from above ) 
+
+	$r->{orig} = $s;
+	$r->{file} = $parts[ @parts - 1 ];
+	delete $parts[ @parts -1 ];
+
+	$r->{homepage} = join( '/', @parts );
+
+	return $r;
+}
