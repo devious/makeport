@@ -29,6 +29,12 @@ die Dumper $a;
 #		exit ( quit ) 
 
 sub get_input {
+	my $msg = shift;
+	print "$msg";
+	print "\n> ";
+	my $inp = <>;
+
+	return $inp;
 }
 
 sub process_url {
@@ -38,20 +44,29 @@ sub process_url {
 	my @parts = split( '/', $s );
 	my $r = {};
 
+	my $c = 0;
+	my @homepage;
+	my @path;
 	for my $p ( @parts ) {
 		if( $p =~ m/((\d+\.){1,}\d+)/ ) {
 			$r->{version} = $1;
+			$r->{name} = $p;
+			$r->{name} =~ s/$r->{version}//;
+			$r->{name} =~ s/(\..*$)//;
+			$r->{ext} = $1;
+			$r->{name} =~ s/\.$//;
+			$r->{name} =~ s/\-$|\_$//;
 		}
+		push( @homepage, $p ) if $c < 3;
+		push( @path, $p ) if ( $c >= 3 && $c < @parts - 1 );
+		$c++;
 	}
 
-	# we need to prompt for version here ( assuming we don't have a
-	# version from above ) 
+	$r->{version} = get_input( "Can't determine VERSION. Please enter it now:" ) unless $r->{version};
+	$r->{name} = get_input( "Can't determine NAME. Please enter it now:" ) unless $r->{name};
 
-	$r->{orig} = $s;
-	$r->{file} = $parts[ @parts - 1 ];
-	delete $parts[ @parts -1 ];
-
-	$r->{homepage} = join( '/', @parts );
+	$r->{homepage} = join( '/', @homepage );
+	$r->{path} = join( '/', @path );
 
 	return $r;
 }
